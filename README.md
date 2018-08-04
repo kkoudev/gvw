@@ -8,6 +8,8 @@ Golang version manager.
 curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh | bash
 ```
 
+Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in global PATH.
+
 ## Uninstallation
 
 ```
