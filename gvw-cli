@@ -1,0 +1,589 @@
+#!/bin/bash
+
+set -e
+
+#===========================================
+# Define common variables and functions.
+#===========================================
+
+#-------------------------------------------
+# Define variables.
+#
+# GVW_VERSION             : GVW version.
+# GVW_ROOT                : GVW root directory.
+# GVW_VERSIONS_DIR        : Golang root directory per version.
+# GVW_DOWNLOADS_DIR       : GVW downloading directory.
+# GVW_NAME                : GVW command name.
+# GO_REPO_URL             : golang repository URL.
+# GO_VERSION_FILE         : golang version file name.
+# GO_PATH_FILE            : gopath file name.
+# GO_GLOBAL_VERSION_FILE  : golang global version file name.
+# GO_BINARY_FILE_FORMAT   : golang binary file name format.
+# GO_BINARY_URL_FORMAT    : golang binary url format.
+#-------------------------------------------
+GVW_VERSION="1.0.0"
+GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
+GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
+GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
+GVW_NAME=${0##*/}
+GO_REPO_URL="https://go.googlesource.com/go"
+GO_VERSION_FILE=".go-version"
+GO_PATH_FILE=".gopath"
+GO_GLOBAL_VERSION_FILE="version"
+GO_BINARY_FILE_FORMAT="%s.%s-%s.tar.gz"
+GO_BINARY_URL_FORMAT="https://dl.google.com/go/%s"
+
+
+#-------------------------------------------
+# Output cat file
+#
+# 1 : The directory path.
+# 2 : File name
+#-------------------------------------------
+cat_file() {
+
+  local DIR_PATH="$1"
+  local FILE_NAME="$2"
+  echo -n "$([[ -e ${DIR_PATH}/${FILE_NAME} ]] && echo -n $(cat ${DIR_PATH}/${FILE_NAME} | tr -d '\n'))"
+
+}
+
+#-------------------------------------------
+# Output nearly local version file.
+#
+# 1 : The root directory.
+#-------------------------------------------
+find_local_version() {
+
+  local DIR_PATH="$1"
+  local GO_VERSION="$(cat_file ${DIR_PATH} ${GO_VERSION_FILE})"
+
+  # find version file in parent directory
+  while [ -z "${GO_VERSION}" -a "${DIR_PATH}" != '' ]
+  do
+    DIR_PATH="${DIR_PATH%/*}"
+    GO_VERSION="$(cat_file ${DIR_PATH} ${GO_VERSION_FILE})"
+  done
+
+  echo -n "${GO_VERSION}"
+
+}
+
+#-------------------------------------------
+# Output nearly golang version file.
+#
+# 1 : The root directory.
+#-------------------------------------------
+find_version() {
+
+  local DIR_PATH="$1"
+  local GO_VERSION="$(find_local_version ${DIR_PATH})"
+
+  # Empty version?
+  if [ -z "${GO_VERSION}" -a -e "${GVW_ROOT}/${GO_GLOBAL_VERSION_FILE}" ]; then
+
+    # using global version
+    GO_VERSION="$(cat "${GVW_ROOT}/${GO_GLOBAL_VERSION_FILE}")"
+
+  fi
+
+  echo -n "${GO_VERSION}"
+
+}
+
+#-------------------------------------------
+# Output nearly gopath file.
+#
+# 1 : The root directory.
+#-------------------------------------------
+find_go_path() {
+
+  local DIR_PATH="$1"
+  local GO_PATH="$(cat_file ${DIR_PATH} ${GO_PATH_FILE})"
+
+  # find gopath file in parent directory
+  while [ -z "${GO_PATH}" -a "${DIR_PATH}" != '' ]
+  do
+    DIR_PATH="${DIR_PATH%/*}"
+    GO_PATH="$(cat_file ${DIR_PATH} ${GO_PATH_FILE})"
+  done
+
+  # Found gopath file?
+  if [ -z "${DIR_PATH}" -a -z "${GO_PATH}" ]; then
+    echo -n ""
+  else
+    echo -n "${DIR_PATH}/${GO_PATH}"
+  fi
+
+}
+
+#-------------------------------------------
+# Output file name of golang binary
+#
+# 1 : Install version
+#-------------------------------------------
+golang_binary_file() {
+
+  local INSTALL_VERSION="$1"
+  local OS_NAME=$(uname -s | tr '[:upper:]' '[:lower:]')
+  local ARCH_NAME=$(uname -m)
+  local USING_ARCH_NAME
+
+  # Convert arch name
+  case ${ARCH_NAME} in
+    x86_64)
+      USING_ARCH_NAME="amd64"
+      ;;
+    x86)
+      USING_ARCH_NAME="386"
+      ;;
+    *)
+      USING_ARCH_NAME=${ARCH_NAME}
+      ;;
+  esac
+
+  # Output file name
+  printf ${GO_BINARY_FILE_FORMAT} ${INSTALL_VERSION} ${OS_NAME} ${USING_ARCH_NAME}
+
+}
+
+#-------------------------------------------
+# Output URL of golang binary
+#
+# 1 : Install version
+#-------------------------------------------
+golang_binary_url() {
+
+  local INSTALL_VERSION="$1"
+
+  # Output url
+  printf ${GO_BINARY_URL_FORMAT} $(golang_binary_file ${INSTALL_VERSION})
+
+}
+
+#-------------------------------------------
+# Sort list of versions
+#
+# 1 : versions list
+#-------------------------------------------
+sort_versions() {
+
+  cat - | grep -E "^go" --color=none | sort -t "." -k 1n -k 2n -k 3n
+
+}
+
+#-------------------------------------------
+# Execute command in specified version.
+#
+# 1   : golang version
+# 2   : Command name
+# 3.. : Command arguments
+#-------------------------------------------
+exec_command() {
+
+  local CURRENT_DIR=$(pwd)
+  local GO_VERSION="$1"
+  local GO_PATH=$(find_go_path ${CURRENT_DIR})
+
+  # No installed specified version?
+  if [[ ! -e "${GVW_VERSIONS_DIR}/${GO_VERSION}" ]]; then
+    echo "No installed specified version."
+    exit 1
+  fi
+
+  local EXEC_COMMAND=$2
+  local EXEC_COMMAND_ARGS="${@:3}"
+
+  # export goroot and gopath
+  export GOROOT="${GVW_VERSIONS_DIR}/${GO_VERSION}/go"
+  [[ -n ${GO_PATH} ]] && export GOPATH="${GO_PATH}"
+
+  # execute commands
+  if [[ -e "${GOROOT}/bin/${EXEC_COMMAND}" ]]; then
+    PATH="${GOROOT}/bin:$PATH" "${GOROOT}/bin/${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+  elif [[ -e "${GOPATH}/bin/${EXEC_COMMAND}" ]]; then
+    PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH" "${GOPATH}/bin/${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+  else
+    echo "Not found specified command."
+    exit 1
+  fi
+
+}
+
+
+#===========================================
+# Usages.
+#===========================================
+
+#-------------------------------------------
+# View usage "gow" options
+#-------------------------------------------
+usage_gvw() {
+
+  cat << EOF
+Usage: ${GVW_NAME} <command> [<options>]
+
+    install <version>     Install <version>
+    uninstall <version>   Uninstall <version>
+    local [<version>]     Set the local application-specific golang version
+    global [<version>]    Set the global golang version
+    list                  List installed golang versions or available golang versions.
+    path <relative path>  Set the application-specific GOPATH
+    exec <command>        Execute global golang commands in current golang version.
+    go                    Execute go command in current golang version
+    gofmt                 Execute gofmt command in current golang version
+    godoc                 Execute godoc command in current golang version
+    current               Show using golang version for exec command.
+    version               Show gvw version.
+EOF
+
+}
+
+#-------------------------------------------
+# View usage "gow list" options
+#-------------------------------------------
+usage_gvw_list() {
+
+  cat << EOF
+Usage: ${GVW_NAME} list [<args>]
+
+    -h            Show this message.
+    -l            List installed local versions.
+    -r            List remote versions.
+EOF
+
+}
+
+
+#===========================================
+# Sub commands of gow.
+#===========================================
+
+#-------------------------------------------
+# install
+#-------------------------------------------
+cmd_install() {
+
+  local INSTALL_VERSION=$1
+  local REMOTE_BINARY_URL="$(golang_binary_url ${INSTALL_VERSION})"
+  local DOWNLOAD_BINARY_PATH="${GVW_DOWNLOADS_DIR}/$(golang_binary_file ${INSTALL_VERSION})"
+  local STATUS_CODE=$(curl -Is ${REMOTE_BINARY_URL} -o /dev/null -w "%{http_code}")
+
+  # Not exists version?
+  if [[ ${STATUS_CODE} != "200" ]]; then
+    echo "Not found specify this version."
+    exit 1
+  fi
+
+  # Already installed version?
+  if [[ -e "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}" ]]; then
+    echo "Already installed this version."
+    read -p "Continue with installation? (y/N) : " CONTINUE_INSTALL
+    [[ $(printf "${CONTINUE_INSTALL}" | tr '[:upper:]' '[:lower:]') != "y" ]] && exit 0
+  fi
+
+  echo "Installing ${INSTALL_VERSION}...."
+
+  # creates downloading directory and download specified version binary
+  mkdir -p ${GVW_DOWNLOADS_DIR} && curl -Ls "${REMOTE_BINARY_URL}" -o "${DOWNLOAD_BINARY_PATH}"
+
+  # Decompress binary package
+  mkdir -p "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}" && tar zxf "${DOWNLOAD_BINARY_PATH}" -C "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}"
+
+  echo "Complete installing ${INSTALL_VERSION}."
+
+}
+
+#-------------------------------------------
+# uninstall
+#-------------------------------------------
+cmd_uninstall() {
+
+  local INSTALL_VERSION=$1
+  local DOWNLOAD_BINARY_PATH="${GVW_DOWNLOADS_DIR}/$(golang_binary_file ${INSTALL_VERSION})"
+
+  # Not install version?
+  if [[ ! -e "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}" ]]; then
+    echo "Not found this version."
+    exit 1
+  fi
+
+  # Confirm uninstall specified version
+  read -p "Uninstall ${INSTALL_VERSION}? (y/N) : " CONFIRM_UNINSTALL
+
+  # Uninstall yes?
+  if [[ ${CONFIRM_UNINSTALL} = "y" ]]; then
+
+    # Decompress binary package
+    rm -rf "${DOWNLOAD_BINARY_PATH}" "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}"
+
+    [[ $? -eq 0 ]] && echo "Complete uninstalling ${INSTALL_VERSION}."
+
+  fi
+
+}
+
+#-------------------------------------------
+# list
+#-------------------------------------------
+cmd_list() {
+
+  while getopts hrl OPTION "$@"
+  do
+    case ${OPTION} in
+      r)
+        git ls-remote -t "${GO_REPO_URL}" | awk -F/ '{ print $NF }' | sort_versions
+        exit 0
+        ;;
+      l)
+        [[ -e ${GVW_VERSIONS_DIR} ]] && ls ${GVW_VERSIONS_DIR} | sort_versions
+        exit 0
+        ;;
+      *)
+        usage_gvw_list;
+        exit 1
+        ;;
+    esac
+  done
+  usage_gvw_list
+
+}
+
+#-------------------------------------------
+# local
+#-------------------------------------------
+cmd_local() {
+
+  local USING_VERSION=$1
+
+  # No specified version?
+  if [[ -z ${USING_VERSION} ]]; then
+
+    local GO_VERSION=$(find_local_version $(pwd))
+
+    # Found global version file?
+    if [[ -n ${GO_VERSION} ]]; then
+
+      # Output local version
+      echo "${GO_VERSION}"
+      exit 0
+
+    else
+
+      echo "No specify local version."
+      exit 1
+
+    fi
+
+  fi
+
+  # No installed specified version?
+  if [[ ! -e "${GVW_VERSIONS_DIR}/${USING_VERSION}" ]]; then
+    echo "No installed specified version."
+    exit 1
+  fi
+
+  # creates global version file
+  printf "${USING_VERSION}" > "$(pwd)/${GO_VERSION_FILE}"
+
+}
+
+#-------------------------------------------
+# global
+#-------------------------------------------
+cmd_global() {
+
+  local USING_VERSION=$1
+
+  # No specified version?
+  if [[ -z ${USING_VERSION} ]]; then
+
+    # Found global version file?
+    if [[ -e "${GVW_ROOT}/${GO_GLOBAL_VERSION_FILE}" ]]; then
+
+      # Output global version
+      cat_file ${GVW_ROOT} ${GO_GLOBAL_VERSION_FILE}
+      exit 0
+
+    else
+
+      echo "No specify global version."
+      exit 1
+
+    fi
+
+  fi
+
+  # No installed specified version?
+  if [[ ! -e "${GVW_VERSIONS_DIR}/${USING_VERSION}" ]]; then
+    echo "No installed specified version."
+    exit 1
+  fi
+
+  # creates global version file
+  printf "${USING_VERSION}" > "${GVW_ROOT}/${GO_GLOBAL_VERSION_FILE}"
+
+}
+
+#-------------------------------------------
+# path
+#-------------------------------------------
+cmd_path() {
+
+  local USING_PATH=$1
+
+    # No specified path?
+  if [[ -z ${USING_PATH} ]]; then
+
+    local GO_PATH=$(find_go_path $(pwd))
+
+    # Found gopath file?
+    if [[ -n ${GO_PATH} ]]; then
+
+      # Output gopath
+      echo "${GO_PATH}"
+      exit 0
+
+    else
+
+      echo "No specify application-specific GOPATH."
+      exit 1
+
+    fi
+
+  fi
+
+  # creates global version file
+  printf "${USING_PATH}" > "$(pwd)/${GO_PATH_FILE}"
+
+}
+
+#-------------------------------------------
+# exec
+#-------------------------------------------
+cmd_exec() {
+
+  exec_command $(find_version $(pwd)) "$@"
+
+}
+
+#-------------------------------------------
+# go
+#-------------------------------------------
+cmd_go() {
+
+  exec_command $(find_version $(pwd)) go "$@"
+
+}
+
+#-------------------------------------------
+# gofmt
+#-------------------------------------------
+cmd_gofmt() {
+
+  exec_command $(find_version $(pwd)) gofmt "$@"
+
+}
+
+#-------------------------------------------
+# godoc
+#-------------------------------------------
+cmd_godoc() {
+
+  exec_command $(find_version $(pwd)) godoc "$@"
+
+}
+
+#-------------------------------------------
+# current
+#-------------------------------------------
+cmd_current() {
+
+  local CURRENT_VERSION="$(find_version $(pwd))"
+
+  # Empty version?
+  if [[ -z ${CURRENT_VERSION} ]]; then
+    echo "No specify using golang version."
+    exit 1
+  fi
+
+  echo ${CURRENT_VERSION}
+
+}
+
+#-------------------------------------------
+# version
+#-------------------------------------------
+cmd_version() {
+
+  echo "${GVW_VERSION}"
+
+}
+
+
+#===========================================
+# Entry point of gvw.
+#===========================================
+
+case ${GVW_NAME} in
+  gvw)
+    GVW_COMMAND=$1
+    GVW_COMMAND_OPTIONS="${@:2}"
+
+    # Operations per command.
+    case ${GVW_COMMAND} in
+      install)
+        cmd_install ${GVW_COMMAND_OPTIONS}
+        ;;
+      uninstall)
+        cmd_uninstall ${GVW_COMMAND_OPTIONS}
+        ;;
+      list)
+        cmd_list ${GVW_COMMAND_OPTIONS}
+        ;;
+      local)
+        cmd_local ${GVW_COMMAND_OPTIONS}
+        ;;
+      global)
+        cmd_global ${GVW_COMMAND_OPTIONS}
+        ;;
+      path)
+        cmd_path ${GVW_COMMAND_OPTIONS}
+        ;;
+      exec)
+        cmd_exec ${GVW_COMMAND_OPTIONS}
+        ;;
+      go)
+        cmd_go ${GVW_COMMAND_OPTIONS}
+        ;;
+      gofmt)
+        cmd_gofmt ${GVW_COMMAND_OPTIONS}
+        ;;
+      godoc)
+        cmd_godoc ${GVW_COMMAND_OPTIONS}
+        ;;
+      current)
+        cmd_current ${GVW_COMMAND_OPTIONS}
+        ;;
+      version)
+        cmd_version ${GVW_COMMAND_OPTIONS}
+        ;;
+      *)
+        usage_gvw
+        ;;
+    esac
+    ;;
+  gow)
+    cmd_go "$@"
+    ;;
+  gofmtw)
+    cmd_gofmt "$@"
+    ;;
+  godocw)
+    cmd_godoc "$@"
+    ;;
+  *)
+    echo "Illegal command executed."
+    exit 1
+    ;;
+esac
