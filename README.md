@@ -78,14 +78,6 @@ gvw exec <golang command>
 
 This command execute glang commands in GOPATH/bin and global PATH.
 
-### Execute golang commands in current golang version
-
-```
-gvw exec <golang command>
-```
-
-This command execute golang commands in GOPATH/bin and global PATH.
-
 ### Execute go command in current golang version.
 
 ```
