@@ -76,7 +76,7 @@ Show current path if no specify path.
 gvw exec <golang command>
 ```
 
-This command execute glang commands in GOPATH/bin and global PATH.
+This command execute golang commands in GOPATH/bin and global PATH.
 
 ### Execute go command in current golang version.
 
