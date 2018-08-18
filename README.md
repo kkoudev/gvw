@@ -5,7 +5,7 @@ Golang version manager.
 ## Installation
 
 ```
-curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh | bash
+bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh)
 ```
 
 Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in global PATH.
@@ -13,7 +13,7 @@ Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in g
 ## Uninstallation
 
 ```
-curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh | bash
+bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh)
 ```
 
 ## Usage
