@@ -64,10 +64,11 @@ Show current global version if no specify version.
 ### Set application-specific GOPATH
 
 ```
-gvw path [<relative path>]
+gvw path [<relative path or absolute path>]
 ```
 
-This command creates ".gopath" file in current directory.  
+This command creates ".go-path" file in current directory.
+This command supports environment variables.
 Show current path if no specify path.
 
 ### Execute golang commands in current golang version

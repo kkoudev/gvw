@@ -242,7 +242,7 @@ Usage: ${GVW_NAME} <command> [<options>]
     local [<version>]     Set the local application-specific golang version
     global [<version>]    Set the global golang version
     list                  List installed golang versions or available golang versions.
-    path <relative path>  Set the application-specific GOPATH
+    path <path>           Set the application-specific GOPATH. <path> is relative path or absolute path.
     exec <command>        Execute global golang commands in current golang version.
     go                    Execute go command in current golang version
     gofmt                 Execute gofmt command in current golang version
