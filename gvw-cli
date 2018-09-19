@@ -210,7 +210,7 @@ exec_command() {
   # export goroot and gopath
   export GOROOT="${GVW_VERSIONS_DIR}/${GO_VERSION}/go"
   [[ -n ${GO_PATH} ]] && export GOPATH="${GO_PATH}"
-  [[ -n ${GOPATH} ]] && export GOPATH="${GO_DEFAULT_GOPATH}"
+  [[ -z ${GOPATH} ]] && export GOPATH="${GO_DEFAULT_GOPATH}"
 
   # execute commands
   if [[ -e "${GOROOT}/bin/${EXEC_COMMAND}" ]]; then
