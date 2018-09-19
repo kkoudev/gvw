@@ -21,7 +21,7 @@ set -e
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-GVW_VERSION="1.0.0"
+GVW_VERSION="1.1.0"
 GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -240,7 +240,22 @@ EOF
 }
 
 #-------------------------------------------
-# View usage "gow list" options
+# View usage "gvw install" options
+#-------------------------------------------
+usage_gvw_install() {
+
+  cat << EOF
+Usage: ${GVW_NAME} install [<args>] [<version>]
+
+    -h            Show this message.
+    -c            Install current golang version.
+    -s            Skip displaying prompt for reinstall specified version.
+EOF
+
+}
+
+#-------------------------------------------
+# View usage "gvw list" options
 #-------------------------------------------
 usage_gvw_list() {
 
@@ -264,7 +279,36 @@ EOF
 #-------------------------------------------
 cmd_install() {
 
-  local INSTALL_VERSION=$1
+  local CURRENT_VERSION=""
+  local SKIP_REINSTALLED_VERSION=""
+
+  while getopts hcs OPTION "$@"
+  do
+    case ${OPTION} in
+      c)
+        CURRENT_VERSION="$(find_version $(pwd))"
+
+        # Empty version?
+        if [[ -z ${CURRENT_VERSION} ]]; then
+          echo "No specify using golang version."
+          exit 1
+        fi
+
+        # specify current version as install version.
+        INSTALL_VERSION=${CURRENT_VERSION}
+        ;;
+      s)
+        SKIP_REINSTALLED_VERSION="y"
+        ;;
+      *)
+        usage_gvw_install;
+        exit 0
+        ;;
+    esac
+  done
+  shift $(($OPTIND - 1))
+
+  local INSTALL_VERSION=${CURRENT_VERSION:-"$1"}
   local REMOTE_BINARY_URL="$(golang_binary_url ${INSTALL_VERSION})"
   local DOWNLOAD_BINARY_PATH="${GVW_DOWNLOADS_DIR}/$(golang_binary_file ${INSTALL_VERSION})"
   local STATUS_CODE=$(curl -Is ${REMOTE_BINARY_URL} -o /dev/null -w "%{http_code}")
@@ -277,9 +321,14 @@ cmd_install() {
 
   # Already installed version?
   if [[ -e "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}" ]]; then
+
+    # Skip re-installed version?
+    [[ "${SKIP_REINSTALLED_VERSION}" = "y" ]] && exit 0
+
     echo "Already installed this version."
     read -p "Continue with installation? (y/N) : " CONTINUE_INSTALL
     [[ $(printf "${CONTINUE_INSTALL}" | tr '[:upper:]' '[:lower:]') != "y" ]] && exit 0
+
   fi
 
   echo "Installing ${INSTALL_VERSION}...."
