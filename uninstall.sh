@@ -49,6 +49,7 @@ if [[ $(printf "${CONTINUE_UNINSTALL}" | tr '[:upper:]' '[:lower:]') = "y" ]]; t
   rm -f ${INSTALL_DIR}/gow
   rm -f ${INSTALL_DIR}/gofmtw
   rm -f ${INSTALL_DIR}/godocw
+  rm -f ${INSTALL_DIR}/gvw-cli
 
   echo "Complete uninstallation."
 
