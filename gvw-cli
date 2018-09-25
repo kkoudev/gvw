@@ -22,7 +22,7 @@ set -e
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.2.0"
+readonly GVW_VERSION="1.3.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -218,8 +218,13 @@ exec_command() {
   elif [[ -e "${GOPATH}/bin/${EXEC_COMMAND}" ]]; then
     PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH" "${GOPATH}/bin/${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
   else
-    echo "Not found specified command."
-    exit 1
+    which -s ${EXEC_COMMAND}
+    if [[ $? -eq 0 ]]; then
+      PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH" "${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+    else
+      echo "Not found specified command."
+      exit 1
+    fi
   fi
 
 }

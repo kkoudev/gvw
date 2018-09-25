@@ -1,3 +1,9 @@
+# 1.3.0 (2018-09-25)
+
+### Changed
+
+-   "exec" command supports executable file in not exists $GOPATH/bin.
+
 # 1.2.0 (2018-09-20)
 
 ### Changed
