@@ -16,6 +16,19 @@ Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in g
 bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh)
 ```
 
+## Supports ".env" file
+
+The ".env" file defines environment variables during command execution.
+
+```
+# 1. Creates a .env file in project root directory.
+# .env
+GO111MODULE=on
+
+# 2. Executes gvw command.
+gvw go mod donwload
+```
+
 ## Usage
 
 ### Install golang
@@ -48,7 +61,7 @@ gvw list -l
 gvw local [<version>]
 ```
 
-This command creates ".go-version" file in current directory.  
+This command creates ".go-version" file in current directory.
 Show current local version if no specify version.
 
 ### Set golang global version
@@ -57,8 +70,8 @@ Show current local version if no specify version.
 gvw global [<version>]
 ```
 
-This command creates global golang version file.  
-The global version is used when ".go-version" file not found.  
+This command creates global golang version file.
+The global version is used when ".go-version" file not found.
 Show current global version if no specify version.
 
 ### Set application-specific GOPATH

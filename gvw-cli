@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -eC
 
 #===========================================
 # Define common variables and functions.
@@ -19,10 +19,11 @@ set -e
 # GO_VERSION_FILE         : golang version file name.
 # GO_PATH_FILE            : gopath file name.
 # GO_GLOBAL_VERSION_FILE  : golang global version file name.
+# GO_ENV_FILE             : golang environment variable definition file.
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.3.0"
+readonly GVW_VERSION="1.4.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -32,6 +33,7 @@ readonly GO_REPO_URL="https://go.googlesource.com/go"
 readonly GO_VERSION_FILE=".go-version"
 readonly GO_PATH_FILE=".go-path"
 readonly GO_GLOBAL_VERSION_FILE="version"
+readonly GO_ENV_FILE=".env"
 readonly GO_BINARY_FILE_FORMAT="%s.%s-%s.tar.gz"
 readonly GO_BINARY_URL_FORMAT="https://dl.google.com/go/%s"
 
@@ -61,7 +63,7 @@ find_local_version() {
   local GO_VERSION="$(cat_file ${DIR_PATH} ${GO_VERSION_FILE})"
 
   # find version file in parent directory
-  while [[ -z "${GO_VERSION}" && "${DIR_PATH}" != '' ]]
+  while [[ -z "${GO_VERSION}" && -n "${DIR_PATH}" ]]
   do
     DIR_PATH="${DIR_PATH%/*}"
     GO_VERSION="$(cat_file ${DIR_PATH} ${GO_VERSION_FILE})"
@@ -104,7 +106,7 @@ find_go_path() {
   local GO_PATH="$(cat_file ${DIR_PATH} ${GO_PATH_FILE})"
 
   # find gopath file in parent directory
-  while [[ -z "${GO_PATH}" && "${DIR_PATH}" != '' ]]
+  while [[ -z "${GO_PATH}" && -n "${DIR_PATH}" ]]
   do
     DIR_PATH="${DIR_PATH%/*}"
     GO_PATH="$(cat_file ${DIR_PATH} ${GO_PATH_FILE})"
@@ -126,6 +128,31 @@ find_go_path() {
     echo -n "${GO_PATH}"
   else
     echo -n "${DIR_PATH}/${GO_PATH}"
+  fi
+
+}
+
+#-------------------------------------------
+# Output nearly env file path.
+#
+# 1 : The root directory.
+#-------------------------------------------
+find_env_path() {
+
+  local DIR_PATH="$1"
+  local GO_ENV_PATH="${DIR_PATH}/${GO_ENV_FILE}"
+
+  # find version file in parent directory
+  while [[ ! -e ${GO_ENV_PATH} && -n "${DIR_PATH}" ]]
+  do
+    DIR_PATH="${DIR_PATH%/*}"
+    GO_ENV_PATH="${DIR_PATH}/${GO_ENV_FILE}"
+  done
+
+  if [[ -e "${GO_ENV_PATH}" ]]; then
+    echo -n "${GO_ENV_PATH}"
+  else
+    echo -n ""
   fi
 
 }
@@ -211,20 +238,23 @@ exec_command() {
   export GOROOT="${GVW_VERSIONS_DIR}/${GO_VERSION}/go"
   [[ -n ${GO_PATH} ]] && export GOPATH="${GO_PATH}"
   [[ -z ${GOPATH} ]] && export GOPATH="${GO_DEFAULT_GOPATH}"
+  export PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH"
+
+  # load envfile
+  local GO_ENV_PATH=$(find_env_path ${CURRENT_DIR})
+
+  # define environment variables?
+  if [[ -n ${GO_ENV_PATH} ]]; then
+    eval "$(awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH})"
+  fi
 
   # execute commands
-  if [[ -e "${GOROOT}/bin/${EXEC_COMMAND}" ]]; then
-    PATH="${GOROOT}/bin:$PATH" "${GOROOT}/bin/${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
-  elif [[ -e "${GOPATH}/bin/${EXEC_COMMAND}" ]]; then
-    PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH" "${GOPATH}/bin/${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+  which -s ${EXEC_COMMAND}
+  if [[ $? -eq 0 ]]; then
+    ${EXEC_COMMAND} ${EXEC_COMMAND_ARGS}
   else
-    which -s ${EXEC_COMMAND}
-    if [[ $? -eq 0 ]]; then
-      PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH" "${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
-    else
-      echo "Not found specified command."
-      exit 1
-    fi
+    echo "Not found specified command."
+    exit 1
   fi
 
 }
