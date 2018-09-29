@@ -671,13 +671,13 @@ case ${GVW_NAME} in
         ;;
     esac
     ;;
-  gow)
+  gow|go)
     cmd_go "$@"
     ;;
-  gofmtw)
+  gofmtw|gofmt)
     cmd_gofmt "$@"
     ;;
-  godocw)
+  godocw|godoc)
     cmd_godoc "$@"
     ;;
   *)

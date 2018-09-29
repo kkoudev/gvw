@@ -50,7 +50,29 @@ curl -s "https://raw.githubusercontent.com/kkoudev/gvw/${INSTALL_TAG}/gvw-cli" -
 chmod a+x ${INSTALL_DIR}/gvw-cli
 
 # Creates symbolic links
-ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/gvw
-ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/gow
-ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/gofmtw
-ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/godocw
+for CMD_NAME in gvw gow gofmtw godocw
+do
+  ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
+done
+
+# Creates symbolic links for general commands
+for CMD_NAME in go gofmt godoc
+do
+
+  if [[ -e ${INSTALL_DIR}/${CMD_NAME} ]]; then
+
+    # Not gvw-cli command?
+    if [[ ! -L ${INSTALL_DIR}/${CMD_NAME} \
+         || (-L ${INSTALL_DIR}/${CMD_NAME} && $(readlink ${INSTALL_DIR}/${CMD_NAME} | tr -d '\n') != ${INSTALL_DIR}/gvw-cli) ]]; then
+
+      read -p "Overwrite already installed \"${CMD_NAME}\" command? (y/N) : " CONTINUE_INSTALL
+      [[ $(printf "${CONTINUE_INSTALL}" | tr '[:upper:]' '[:lower:]') != "y" ]] && continue
+
+    fi
+
+  fi
+
+  # Creates symbolic link for general command
+  ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
+
+done

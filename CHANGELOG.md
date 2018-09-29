@@ -1,3 +1,9 @@
+# 1.5.0 (2018-09-30)
+
+### Added
+
+-   Creates symbolic links for "go", "gofmt" and "godoc" command at installation.
+
 # 1.4.0 (2018-09-26)
 
 ### Added

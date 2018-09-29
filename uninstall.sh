@@ -45,11 +45,18 @@ read -p "Really uninstall gvw? (y/N) : " CONTINUE_UNINSTALL
 if [[ $(printf "${CONTINUE_UNINSTALL}" | tr '[:upper:]' '[:lower:]') = "y" ]]; then
 
   # Remove all commands
-  rm -f ${INSTALL_DIR}/gvw
-  rm -f ${INSTALL_DIR}/gow
-  rm -f ${INSTALL_DIR}/gofmtw
-  rm -f ${INSTALL_DIR}/godocw
-  rm -f ${INSTALL_DIR}/gvw-cli
+  for CMD_NAME in gvw-cli gvw gow gofmtw godocw
+  do
+    rm -f ${INSTALL_DIR}/${CMD_NAME}
+  done
+
+  # Remove all general commands
+  for CMD_NAME in go gofmt godoc
+  do
+    [[ -e ${INSTALL_DIR}/${CMD_NAME} \
+      && -L ${INSTALL_DIR}/${CMD_NAME} \
+      && $(readlink ${INSTALL_DIR}/${CMD_NAME} | tr -d '\n') = ${INSTALL_DIR}/gvw-cli ]] && rm -f ${INSTALL_DIR}/${CMD_NAME}
+  done
 
   echo "Complete uninstallation."
 
