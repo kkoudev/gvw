@@ -25,8 +25,12 @@ The ".env" file defines environment variables during command execution.
 # .env
 GO111MODULE=on
 
-# 2. Executes gvw command.
+# 2. Executes gvw command or alias go commands.
 gvw go mod donwload
+
+or
+
+go mod download
 ```
 
 ## Usage

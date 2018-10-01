@@ -19,7 +19,7 @@ set -e
 # GO_VERSION_FILE         : golang version file name.
 # GO_PATH_FILE            : gopath file name.
 # GO_GLOBAL_VERSION_FILE  : golang global version file name.
-# GO_ENV_FILE             : golang environment variable definition file.
+# GO_ENV_FILE             : golang environment variable definitions file name.
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
