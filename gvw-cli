@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -eC
+set -e
 
 #===========================================
 # Define common variables and functions.
