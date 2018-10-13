@@ -5,7 +5,8 @@ Golang version manager.
 ## Installation
 
 ```
-bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh)
+sudo sh -c "curl -s 
+https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh"
 ```
 
 Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in global PATH.
@@ -13,7 +14,8 @@ Please add "/usr/local/bin" to global PATH if not included "/usr/local/bin" in g
 ## Uninstallation
 
 ```
-bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh)
+sudo sh -c "curl -s 
+https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh"
 ```
 
 ## Supports ".env" file
