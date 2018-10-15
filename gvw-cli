@@ -277,7 +277,7 @@ Usage: ${GVW_NAME} <command> [<options>]
     global [<version>]    Set the global golang version
     list                  List installed golang versions or available golang versions.
     path <path>           Set the application-specific GOPATH. <path> is relative path or absolute path.
-    env                   Print export statements for definition variables from ".env" file.
+    env [<shell name>]    Print export statements for definition variables from ".env" file.
     exec <command>        Execute global golang commands in current golang version.
     go                    Execute go command in current golang version
     gofmt                 Execute gofmt command in current golang version
@@ -561,12 +561,25 @@ cmd_path() {
 #-------------------------------------------
 cmd_env() {
 
+  local SHELL_NAME=${1:-"${SHELL##*/}"}
   local GO_ENV_PATH=$(find_env_path $(pwd))
 
-  # define environment variables?
-  if [[ -n ${GO_ENV_PATH} ]]; then
-    awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH}
-  fi
+  case "${SHELL_NAME}" in
+  bash|zsh)
+    if [[ -n ${GO_ENV_PATH} ]]; then
+      awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH}
+    fi
+    ;;
+
+  fish)
+    if [[ -n ${GO_ENV_PATH} ]]; then
+      awk '/^(.+)/ {gsub("=", " ", $1); print "set -x " $1;}' ${GO_ENV_PATH}
+    fi
+    ;;
+  *)
+    echo "${SHELL_NAME} is not supported shell."
+    ;;
+  esac
 
 }
 

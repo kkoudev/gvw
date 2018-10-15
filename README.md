@@ -91,7 +91,7 @@ Show current path if no specify path.
 ### Print export statements for definition variables from ".env" file.
 
 ```
-gvw env
+gvw env [<shell name>]
 ```
 
 #### Example
@@ -101,7 +101,7 @@ gvw env
 GO_LINT_URL="golang.org/x/lint/golint"
 
 # specify go get url by definition variable.
-eval $(gvw env)
+eval $(gvw env bash)
 go get ${GO_LINT_URL}
 ```
 

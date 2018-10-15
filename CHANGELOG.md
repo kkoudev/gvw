@@ -1,3 +1,9 @@
+# 1.6.1 (2018-10-15)
+
+### Added
+
+-   Supports "env" command shells of bash, zsh and fish.
+
 # 1.6.0 (2018-10-15)
 
 ### Added
