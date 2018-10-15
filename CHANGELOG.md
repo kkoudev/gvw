@@ -1,3 +1,9 @@
+# 1.5.1 (2018-10-15)
+
+### Fixed
+
+-   Cannot output "command not found" error message for "exec" sub command.
+
 # 1.5.0 (2018-09-30)
 
 ### Added
