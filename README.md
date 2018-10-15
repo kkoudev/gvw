@@ -88,6 +88,23 @@ This command creates ".go-path" file in current directory.
 This command supports environment variables.
 Show current path if no specify path.
 
+### Print export statements for definition variables from ".env" file.
+
+```
+gvw env
+```
+
+#### Example
+
+```
+# .env file
+GO_LINT_URL="golang.org/x/lint/golint"
+
+# specify go get url by definition variable.
+eval $(gvw env)
+go get ${GO_LINT_URL}
+```
+
 ### Execute golang commands in current golang version
 
 ```

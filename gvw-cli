@@ -23,7 +23,7 @@ set -e
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.5.1"
+readonly GVW_VERSION="1.6.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -277,6 +277,7 @@ Usage: ${GVW_NAME} <command> [<options>]
     global [<version>]    Set the global golang version
     list                  List installed golang versions or available golang versions.
     path <path>           Set the application-specific GOPATH. <path> is relative path or absolute path.
+    env                   Print export statements for definition variables from ".env" file.
     exec <command>        Execute global golang commands in current golang version.
     go                    Execute go command in current golang version
     gofmt                 Execute gofmt command in current golang version
@@ -556,6 +557,20 @@ cmd_path() {
 }
 
 #-------------------------------------------
+# env
+#-------------------------------------------
+cmd_env() {
+
+  local GO_ENV_PATH=$(find_env_path $(pwd))
+
+  # define environment variables?
+  if [[ -n ${GO_ENV_PATH} ]]; then
+    awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH}
+  fi
+
+}
+
+#-------------------------------------------
 # exec
 #-------------------------------------------
 cmd_exec() {
@@ -646,6 +661,9 @@ case ${GVW_NAME} in
         ;;
       path)
         cmd_path ${GVW_COMMAND_OPTIONS}
+        ;;
+      env)
+        cmd_env ${GVW_COMMAND_OPTIONS}
         ;;
       exec)
         cmd_exec ${GVW_COMMAND_OPTIONS}
