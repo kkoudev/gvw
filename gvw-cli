@@ -36,7 +36,7 @@ done
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.6.3"
+readonly GVW_VERSION="1.7.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -221,7 +221,7 @@ golang_binary_url() {
 #-------------------------------------------
 sort_versions() {
 
-  cat - | grep -E "^go" | sort -t "." -k 1n -k 2n -k 3n
+  cat - | grep -E "^go" | sort -t "." -k 1n -k 2n -k 3n | uniq
 
 }
 
@@ -443,7 +443,7 @@ cmd_list() {
   do
     case ${OPTION} in
       r)
-        curl -s "${GO_TAGS_URL}" | grep -o -E "go([0-9\.]+)</a>" | awk '{gsub("</a>", ""); print $0;}' | sort_versions
+        curl -Ls "${GO_TAGS_URL}" | grep -o -E "go([0-9\.a-zA-Z]+)</a>" | awk '{gsub("</a>", ""); print $0;}' | sort_versions
         exit 0
         ;;
       l)
