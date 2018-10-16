@@ -3,6 +3,19 @@
 set -e
 
 #===========================================
+# Check required commands.
+#===========================================
+
+for CMD_NAME in curl git awk
+do
+  if ! type ${CMD_NAME} > /dev/null 2>&1; then
+    echo "Requires ${CMD_NAME} command."
+    echo "Please install ${CMD_NAME} command."
+    exit 1
+  fi
+done
+
+#===========================================
 # Define common variables and functions.
 #===========================================
 
@@ -23,7 +36,7 @@ set -e
 # GO_BINARY_FILE_FORMAT   : golang binary file name format.
 # GO_BINARY_URL_FORMAT    : golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.6.1"
+readonly GVW_VERSION="1.6.2"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -249,7 +262,7 @@ exec_command() {
   fi
 
   # execute commands
-  if which -s ${EXEC_COMMAND}; then
+  if type ${EXEC_COMMAND} > /dev/null 2>&1; then
     ${EXEC_COMMAND} ${EXEC_COMMAND_ARGS}
   else
     echo "Not found specified command."

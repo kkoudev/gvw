@@ -1,3 +1,13 @@
+# 1.6.2 (2018-10-16)
+
+### Fixed
+
+-   Cannot work linux.
+
+### Added
+
+-   Checks required commands. Print error message if no required commands.
+
 # 1.6.1 (2018-10-15)
 
 ### Added
