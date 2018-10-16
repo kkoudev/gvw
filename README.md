@@ -4,7 +4,7 @@ Golang version manager.
 
 ## Installation
 
-gvw requires bash, curl, git and awk.
+gvw requires bash, curl and awk.
 
 ```
 # bash, zsh

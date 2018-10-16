@@ -6,7 +6,7 @@ set -e
 # Check required commands.
 #===========================================
 
-for CMD_NAME in curl git awk
+for CMD_NAME in curl awk
 do
   if ! type ${CMD_NAME} > /dev/null 2>&1; then
     echo "Requires ${CMD_NAME} command."
@@ -28,7 +28,7 @@ done
 # GVW_DOWNLOADS_DIR       : GVW downloading directory.
 # GVW_NAME                : GVW command name.
 # GO_DEFAULT_GOPATH       : golang default GOPATH.
-# GO_REPO_URL             : golang repository URL.
+# GO_TAGS_URL             : golang repository tags URL.
 # GO_VERSION_FILE         : golang version file name.
 # GO_PATH_FILE            : gopath file name.
 # GO_GLOBAL_VERSION_FILE  : golang global version file name.
@@ -42,7 +42,7 @@ readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
 readonly GVW_NAME=${0##*/}
 readonly GO_DEFAULT_GOPATH="$HOME/go"
-readonly GO_REPO_URL="https://go.googlesource.com/go"
+readonly GO_TAGS_URL="https://go.googlesource.com/go/+refs"
 readonly GO_VERSION_FILE=".go-version"
 readonly GO_PATH_FILE=".go-path"
 readonly GO_GLOBAL_VERSION_FILE="version"
@@ -443,7 +443,7 @@ cmd_list() {
   do
     case ${OPTION} in
       r)
-        git ls-remote -t "${GO_REPO_URL}" | awk -F/ '{ print $NF }' | sort_versions
+        curl -s "${GO_TAGS_URL}" | grep -o -E "go([0-9\.]+)</a>" | awk '{gsub("</a>", ""); print $0;}' | sort_versions
         exit 0
         ;;
       l)

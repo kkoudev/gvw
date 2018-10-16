@@ -1,3 +1,9 @@
+# 1.7.0 (2018-10-17)
+
+### Changed
+
+-   gvw work without git command.
+
 # 1.6.3 (2018-10-17)
 
 ### Fixed
