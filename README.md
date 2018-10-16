@@ -4,6 +4,8 @@ Golang version manager.
 
 ## Installation
 
+gvw requires bash, curl, git and awk.
+
 ```
 # bash, zsh
 bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/install.sh)

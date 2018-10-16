@@ -221,7 +221,7 @@ golang_binary_url() {
 #-------------------------------------------
 sort_versions() {
 
-  cat - | grep -E "^go" --color=none | sort -t "." -k 1n -k 2n -k 3n
+  cat - | grep -E "^go" | sort -t "." -k 1n -k 2n -k 3n
 
 }
 

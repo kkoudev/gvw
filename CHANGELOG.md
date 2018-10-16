@@ -1,3 +1,9 @@
+# 1.6.3 (2018-10-17)
+
+### Fixed
+
+-   Cannot work "list" command in some linux distribution.
+
 # 1.6.2 (2018-10-16)
 
 ### Fixed
