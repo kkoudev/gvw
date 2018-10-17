@@ -1,3 +1,9 @@
+# 1.7.1 (2018-10-17)
+
+### Fixed
+
+-   Optimize "list" command.
+
 # 1.7.0 (2018-10-17)
 
 ### Changed

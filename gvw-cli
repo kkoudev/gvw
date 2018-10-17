@@ -27,16 +27,16 @@ done
 # GVW_VERSIONS_DIR        : Golang root directory per version.
 # GVW_DOWNLOADS_DIR       : GVW downloading directory.
 # GVW_NAME                : GVW command name.
-# GO_DEFAULT_GOPATH       : golang default GOPATH.
-# GO_TAGS_URL             : golang repository tags URL.
-# GO_VERSION_FILE         : golang version file name.
-# GO_PATH_FILE            : gopath file name.
-# GO_GLOBAL_VERSION_FILE  : golang global version file name.
-# GO_ENV_FILE             : golang environment variable definitions file name.
-# GO_BINARY_FILE_FORMAT   : golang binary file name format.
-# GO_BINARY_URL_FORMAT    : golang binary url format.
+# GO_DEFAULT_GOPATH       : Golang default GOPATH.
+# GO_TAGS_URL             : Golang repository tags URL.
+# GO_VERSION_FILE         : Golang version file name.
+# GO_PATH_FILE            : GOPATH file name.
+# GO_GLOBAL_VERSION_FILE  : Golang global version file name.
+# GO_ENV_FILE             : Golang environment variable definitions file name.
+# GO_BINARY_FILE_FORMAT   : Golang binary file name format.
+# GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.7.0"
+readonly GVW_VERSION="1.7.1"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -221,7 +221,7 @@ golang_binary_url() {
 #-------------------------------------------
 sort_versions() {
 
-  cat - | grep -E "^go" | sort -t "." -k 1n -k 2n -k 3n | uniq
+  cat - | grep -E "^go" | sort -t "." -k 1n -k 2n -k 3n
 
 }
 
@@ -443,7 +443,7 @@ cmd_list() {
   do
     case ${OPTION} in
       r)
-        curl -Ls "${GO_TAGS_URL}" | grep -o -E "go([0-9\.a-zA-Z]+)</a>" | awk '{gsub("</a>", ""); print $0;}' | sort_versions
+        curl -Ls "${GO_TAGS_URL}" | grep -o -E ">go([0-9\.a-zA-Z]+)</a>" | awk '{gsub(">go", "go"); gsub("</a>", ""); print $0;}' | sort_versions
         exit 0
         ;;
       l)
