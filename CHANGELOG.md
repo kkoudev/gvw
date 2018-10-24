@@ -1,3 +1,9 @@
+# 1.8.0 (2018-10-24)
+
+### Added
+
+-   Support for ".env" file comments. Add a sharp(#) at the beginning of the line to use comments.
+
 # 1.7.1 (2018-10-17)
 
 ### Fixed
@@ -30,13 +36,13 @@
 
 ### Added
 
--   Supports "env" command shells of bash, zsh and fish.
+-   Support for "env" command shells of bash, zsh and fish.
 
 # 1.6.0 (2018-10-15)
 
 ### Added
 
--   Supports "env" command. This command prints export statements for definition variables from ".env" file.
+-   Support for "env" command. This command prints export statements for definition variables from ".env" file.
 
 # 1.5.1 (2018-10-15)
 
@@ -54,7 +60,7 @@
 
 ### Added
 
--   Supports ".env" file. This file defines environment variables during command execution.
+-   Support for ".env" file. This file defines environment variables during command execution.
 
 # 1.3.0 (2018-09-25)
 

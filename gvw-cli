@@ -36,7 +36,7 @@ done
 # GO_BINARY_FILE_FORMAT   : Golang binary file name format.
 # GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.7.1"
+readonly GVW_VERSION="1.8.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -258,7 +258,7 @@ exec_command() {
 
   # define environment variables?
   if [[ -n ${GO_ENV_PATH} ]]; then
-    eval "$(awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH})"
+    eval "$(awk '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH})"
   fi
 
   # execute commands
@@ -580,15 +580,16 @@ cmd_env() {
   case "${SHELL_NAME}" in
   bash|zsh)
     if [[ -n ${GO_ENV_PATH} ]]; then
-      awk '/^(.+)/ {print "export " $1}' ${GO_ENV_PATH}
+      awk '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH}
     fi
     ;;
 
   fish)
     if [[ -n ${GO_ENV_PATH} ]]; then
-      awk '/^(.+)/ {gsub("=", " ", $1); print "set -x " $1;}' ${GO_ENV_PATH}
+      awk '/^([^#.]+)/ {gsub("=", " ", $1); print "set -x " $1;}' ${GO_ENV_PATH}
     fi
     ;;
+
   *)
     echo "${SHELL_NAME} is not supported shell."
     ;;

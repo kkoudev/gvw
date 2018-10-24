@@ -26,13 +26,15 @@ bash <(curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh
 bash (curl -s https://raw.githubusercontent.com/kkoudev/gvw/master/uninstall.sh | psub)
 ```
 
-## Supports ".env" file
+## Support ".env" file
 
 The ".env" file defines environment variables during command execution.
 
 ```
 # 1. Creates a .env file in project root directory.
 # .env
+
+# Go Modules
 GO111MODULE=on
 
 # 2. Executes gvw command or alias go commands.
