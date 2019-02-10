@@ -258,7 +258,7 @@ exec_command() {
 
   # define environment variables?
   if [[ -n ${GO_ENV_PATH} ]]; then
-    eval "$(awk '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH})"
+    eval "$(awk -F'\n' '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH})"
   fi
 
   # execute commands
@@ -580,13 +580,13 @@ cmd_env() {
   case "${SHELL_NAME}" in
   bash|zsh)
     if [[ -n ${GO_ENV_PATH} ]]; then
-      awk '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH}
+      awk -F'\n' '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH}
     fi
     ;;
 
   fish)
     if [[ -n ${GO_ENV_PATH} ]]; then
-      awk '/^([^#.]+)/ {gsub("=", " ", $1); print "set -x " $1;}' ${GO_ENV_PATH}
+      awk -F'\n' '/^([^#.]+)/ {gsub("=", " ", $1); print "set -x " $1;}' ${GO_ENV_PATH}
     fi
     ;;
 
