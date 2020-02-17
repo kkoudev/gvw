@@ -1,3 +1,9 @@
+# 1.8.2 (2020-02-17)
+
+### Fixed
+
+-   Incorrect processing with binding PATH value from ".env".
+
 # 1.8.1 (2019-02-11)
 
 ### Fixed

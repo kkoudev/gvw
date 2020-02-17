@@ -27,6 +27,7 @@ done
 # GVW_VERSIONS_DIR        : Golang root directory per version.
 # GVW_DOWNLOADS_DIR       : GVW downloading directory.
 # GVW_NAME                : GVW command name.
+# NDW_CLI_PATH            : GVW file path (this file path)
 # GO_DEFAULT_GOPATH       : Golang default GOPATH.
 # GO_TAGS_URL             : Golang repository tags URL.
 # GO_VERSION_FILE         : Golang version file name.
@@ -36,11 +37,12 @@ done
 # GO_BINARY_FILE_FORMAT   : Golang binary file name format.
 # GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.8.1"
+readonly GVW_VERSION="1.8.2"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
 readonly GVW_NAME=${0##*/}
+readonly GVW_CLI_PATH=$(printf "$0" | xargs readlink)
 readonly GO_DEFAULT_GOPATH="$HOME/go"
 readonly GO_TAGS_URL="https://go.googlesource.com/go/+refs"
 readonly GO_VERSION_FILE=".go-version"
@@ -247,12 +249,6 @@ exec_command() {
   local EXEC_COMMAND=$2
   local EXEC_COMMAND_ARGS="${@:3}"
 
-  # export goroot and gopath
-  export GOROOT="${GVW_VERSIONS_DIR}/${GO_VERSION}/go"
-  [[ -n ${GO_PATH} ]] && export GOPATH="${GO_PATH}"
-  [[ -z ${GOPATH} ]] && export GOPATH="${GO_DEFAULT_GOPATH}"
-  export PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH"
-
   # load envfile
   local GO_ENV_PATH=$(find_env_path ${CURRENT_DIR})
 
@@ -261,13 +257,29 @@ exec_command() {
     eval "$(awk -F'\n' '/^([^#.]+)/ {print "export " $1}' ${GO_ENV_PATH})"
   fi
 
+  # export goroot and gopath
+  export GOROOT="${GVW_VERSIONS_DIR}/${GO_VERSION}/go"
+  [[ -n ${GO_PATH} ]] && export GOPATH="${GO_PATH}"
+  [[ -z ${GOPATH} ]] && export GOPATH="${GO_DEFAULT_GOPATH}"
+  export PATH="${GOPATH}/bin:${GOROOT}/bin:$PATH"
+
   # execute commands
   if type ${EXEC_COMMAND} > /dev/null 2>&1; then
-    ${EXEC_COMMAND} ${EXEC_COMMAND_ARGS}
-  else
-    echo "Not found specified command."
-    exit 1
+
+    local EXEC_REAL_PATH=$(which ${EXEC_COMMAND} | head -n 1 | xargs readlink)
+
+    # If exec command and this cli path are different?
+    if [[ ${EXEC_REAL_PATH} != ${GVW_CLI_PATH} ]]; then
+
+      "${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+      return $?
+
+    fi
+
   fi
+
+  echo "Not found specified command."
+  exit 1
 
 }
 
