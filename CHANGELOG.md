@@ -1,3 +1,9 @@
+# 1.8.3 (2020-03-02)
+
+### Fixed
+
+-   Timeout when the binary to download on slow network.
+
 # 1.8.2 (2020-02-17)
 
 ### Fixed

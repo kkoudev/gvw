@@ -27,7 +27,8 @@ done
 # GVW_VERSIONS_DIR        : Golang root directory per version.
 # GVW_DOWNLOADS_DIR       : GVW downloading directory.
 # GVW_NAME                : GVW command name.
-# NDW_CLI_PATH            : GVW file path (this file path)
+# GVW_CLI_PATH            : GVW file path (this file path)
+# GVW_DOWNLOADS_TIMEOUT   : GVW file download timeout (seconds)
 # GO_DEFAULT_GOPATH       : Golang default GOPATH.
 # GO_TAGS_URL             : Golang repository tags URL.
 # GO_VERSION_FILE         : Golang version file name.
@@ -37,12 +38,13 @@ done
 # GO_BINARY_FILE_FORMAT   : Golang binary file name format.
 # GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.8.2"
+readonly GVW_VERSION="1.8.3"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
 readonly GVW_NAME=${0##*/}
 readonly GVW_CLI_PATH=$(printf "$0" | xargs readlink)
+readonly GVW_DOWNLOADS_TIMEOUT=3600
 readonly GO_DEFAULT_GOPATH="$HOME/go"
 readonly GO_TAGS_URL="https://go.googlesource.com/go/+refs"
 readonly GO_VERSION_FILE=".go-version"
@@ -408,7 +410,7 @@ cmd_install() {
   echo "Installing ${INSTALL_VERSION}...."
 
   # creates downloading directory and download specified version binary
-  mkdir -p ${GVW_DOWNLOADS_DIR} && curl -Ls "${REMOTE_BINARY_URL}" -o "${DOWNLOAD_BINARY_PATH}"
+  mkdir -p ${GVW_DOWNLOADS_DIR} && curl -Ls -m ${GVW_DOWNLOADS_TIMEOUT} "${REMOTE_BINARY_URL}" -o "${DOWNLOAD_BINARY_PATH}"
 
   # Decompress binary package
   mkdir -p "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}" && tar zxf "${DOWNLOAD_BINARY_PATH}" -C "${GVW_VERSIONS_DIR}/${INSTALL_VERSION}"
@@ -678,49 +680,46 @@ cmd_version() {
 
 case ${GVW_NAME} in
   gvw)
-    GVW_COMMAND=$1
-    GVW_COMMAND_OPTIONS="${@:2}"
-
     # Operations per command.
-    case ${GVW_COMMAND} in
+    case $1 in
       install)
-        cmd_install ${GVW_COMMAND_OPTIONS}
+        cmd_install "${@:2}"
         ;;
       uninstall)
-        cmd_uninstall ${GVW_COMMAND_OPTIONS}
+        cmd_uninstall "${@:2}"
         ;;
       list)
-        cmd_list ${GVW_COMMAND_OPTIONS}
+        cmd_list "${@:2}"
         ;;
       local)
-        cmd_local ${GVW_COMMAND_OPTIONS}
+        cmd_local "${@:2}"
         ;;
       global)
-        cmd_global ${GVW_COMMAND_OPTIONS}
+        cmd_global "${@:2}"
         ;;
       path)
-        cmd_path ${GVW_COMMAND_OPTIONS}
+        cmd_path "${@:2}"
         ;;
       env)
-        cmd_env ${GVW_COMMAND_OPTIONS}
+        cmd_env "${@:2}"
         ;;
       exec)
-        cmd_exec ${GVW_COMMAND_OPTIONS}
+        cmd_exec "${@:2}"
         ;;
       go)
-        cmd_go ${GVW_COMMAND_OPTIONS}
+        cmd_go "${@:2}"
         ;;
       gofmt)
-        cmd_gofmt ${GVW_COMMAND_OPTIONS}
+        cmd_gofmt "${@:2}"
         ;;
       godoc)
-        cmd_godoc ${GVW_COMMAND_OPTIONS}
+        cmd_godoc "${@:2}"
         ;;
       current)
-        cmd_current ${GVW_COMMAND_OPTIONS}
+        cmd_current "${@:2}"
         ;;
       version)
-        cmd_version ${GVW_COMMAND_OPTIONS}
+        cmd_version "${@:2}"
         ;;
       *)
         usage_gvw
