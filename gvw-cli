@@ -38,7 +38,7 @@ done
 # GO_BINARY_FILE_FORMAT   : Golang binary file name format.
 # GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="1.8.5"
+readonly GVW_VERSION="2.0.0"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -194,6 +194,9 @@ golang_binary_file() {
     x86)
       USING_ARCH_NAME="386"
       ;;
+    aarch64)
+      USING_ARCH_NAME="arm64"
+      ;;
     *)
       USING_ARCH_NAME=${ARCH_NAME}
       ;;
@@ -324,7 +327,6 @@ usage_gvw_install() {
 Usage: ${GVW_NAME} install [<args>] [<version>]
 
     -h            Show this message.
-    -c            Install current golang version.
     -s            Skip displaying prompt for reinstall specified version.
 EOF
 
@@ -358,21 +360,9 @@ cmd_install() {
   local CURRENT_VERSION=""
   local SKIP_REINSTALLED_VERSION=""
 
-  while getopts hcs OPTION "$@"
+  while getopts hs OPTION "$@"
   do
     case ${OPTION} in
-      c)
-        CURRENT_VERSION="$(find_version $(pwd))"
-
-        # Empty version?
-        if [[ -z ${CURRENT_VERSION} ]]; then
-          echo "No specify using golang version."
-          exit 1
-        fi
-
-        # specify current version as install version.
-        INSTALL_VERSION=${CURRENT_VERSION}
-        ;;
       s)
         SKIP_REINSTALLED_VERSION="y"
         ;;
@@ -384,14 +374,22 @@ cmd_install() {
   done
   shift $(($OPTIND - 1))
 
-  local INSTALL_VERSION=${CURRENT_VERSION:-"$1"}
+  local CURRENT_VERSION="$(find_version $(pwd))"
+  local INSTALL_VERSION=${1:-"${CURRENT_VERSION}"}
+
+  # Empty version?
+  if [[ -z ${INSTALL_VERSION} ]]; then
+    echo "No specify install golang version."
+    exit 1
+  fi
+
   local REMOTE_BINARY_URL="$(golang_binary_url ${INSTALL_VERSION})"
   local DOWNLOAD_BINARY_PATH="${GVW_DOWNLOADS_DIR}/$(golang_binary_file ${INSTALL_VERSION})"
   local STATUS_CODE=$(curl -Is ${REMOTE_BINARY_URL} -o /dev/null -w "%{http_code}")
 
   # Not exists version?
   if [[ ${STATUS_CODE} != "200" ]]; then
-    echo "Not found specify this version."
+    echo "Not found specify this version or $(uname -m) arch binary."
     exit 1
   fi
 
@@ -401,7 +399,7 @@ cmd_install() {
     # Skip re-installed version?
     [[ "${SKIP_REINSTALLED_VERSION}" = "y" ]] && exit 0
 
-    echo "Already installed this version."
+    echo "Already installed ${INSTALL_VERSION}."
     read -p "Continue with installation? (y/N) : " CONTINUE_INSTALL
     [[ $(printf "${CONTINUE_INSTALL}" | tr '[:upper:]' '[:lower:]') != "y" ]] && exit 0
 

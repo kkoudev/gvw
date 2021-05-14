@@ -13,7 +13,6 @@ usage() {
 Usage: ${0##*/} [<args>]
 
     -h            Show this message.
-    -d <dir>      Set install directory.
     -v <version>  Set install version.
 EOF
 
@@ -24,15 +23,18 @@ EOF
 # Entry point of install script.
 #===========================================
 
-INSTALL_DIR="/usr/local/bin"
+readonly INSTALL_DIR="/usr/local/bin"
 INSTALL_TAG="master"
+SUDO_ACCESS=""
 
-while getopts hrl OPTION "$@"
+# Apple Silicon?
+if [[ $(uname -s) == "Darwin" && $(uname -m) == "arm64" ]]; then
+  SUDO_ACCESS="sudo"
+fi
+
+while getopts v:h OPTION "$@"
 do
   case ${OPTION} in
-    d)
-      INSTALL_DIR="${OPTARG}"
-      ;;
     v)
       INSTALL_TAG="${OPTARG}"
       ;;
@@ -44,15 +46,15 @@ do
 done
 
 # Download cli script
-curl -s "https://raw.githubusercontent.com/kkoudev/gvw/${INSTALL_TAG}/gvw-cli" -o ${INSTALL_DIR}/gvw-cli
+${SUDO_ACCESS} curl -s "https://raw.githubusercontent.com/kkoudev/gvw/${INSTALL_TAG}/gvw-cli" -o ${INSTALL_DIR}/gvw-cli
 
 # Set executing mode
-chmod a+x ${INSTALL_DIR}/gvw-cli
+${SUDO_ACCESS} chmod a+x ${INSTALL_DIR}/gvw-cli
 
 # Creates symbolic links
-for CMD_NAME in gvw gow gofmtw godocw
+for CMD_NAME in gvw
 do
-  ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
+  ${SUDO_ACCESS} ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
 done
 
 # Creates symbolic links for general commands
@@ -73,6 +75,6 @@ do
   fi
 
   # Creates symbolic link for general command
-  ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
+  ${SUDO_ACCESS} ln -sf ${INSTALL_DIR}/gvw-cli ${INSTALL_DIR}/${CMD_NAME}
 
 done

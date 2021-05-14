@@ -1,3 +1,14 @@
+# 2.0.0 (2021-05-14)
+
+### Added
+
+-   Support for arm64 binary.
+
+### Removed
+
+-   c option of "install" command.
+-   gow, gofmtw and godocw command.
+
 # 1.8.5 (2021-01-11)
 
 ### Fixed
