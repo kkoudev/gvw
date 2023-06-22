@@ -1,3 +1,9 @@
+# 3.0.0 (2023-06-22)
+
+### Changed
+
+-   auto install specified version if no installed specified version.
+
 # 2.0.0 (2021-05-14)
 
 ### Added
