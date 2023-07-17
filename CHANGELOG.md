@@ -1,3 +1,9 @@
+# 3.0.1 (2023-07-18)
+
+### Fixed
+
+-   Incorrect delimiters when execute commands.
+
 # 3.0.0 (2023-06-22)
 
 ### Changed

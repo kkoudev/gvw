@@ -38,7 +38,7 @@ done
 # GO_BINARY_FILE_FORMAT   : Golang binary file name format.
 # GO_BINARY_URL_FORMAT    : Golang binary url format.
 #-------------------------------------------
-readonly GVW_VERSION="3.0.0"
+readonly GVW_VERSION="3.0.1"
 readonly GVW_ROOT=${GVW_ROOT:-"$HOME/.gvw"}
 readonly GVW_VERSIONS_DIR="${GVW_ROOT}/versions"
 readonly GVW_DOWNLOADS_DIR="${GVW_ROOT}/downloads"
@@ -252,7 +252,6 @@ exec_command() {
   fi
 
   local EXEC_COMMAND=$2
-  local EXEC_COMMAND_ARGS="${@:3}"
 
   # load envfile
   local GO_ENV_PATH=$(find_env_path ${CURRENT_DIR})
@@ -276,7 +275,7 @@ exec_command() {
     # If exec command and this cli path are different?
     if [[ ${EXEC_REAL_PATH} != ${GVW_CLI_PATH} ]]; then
 
-      "${EXEC_COMMAND}" ${EXEC_COMMAND_ARGS}
+      "${EXEC_COMMAND}" "${@:3}"
       return $?
 
     fi
